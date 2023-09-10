@@ -24,6 +24,13 @@ app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
 
+
+app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+}).on('error', (err) => {
+    console.error('Error starting server:', err);
+});
+
 // Test Route
 app.get('/test', (req, res) => {
     twilioClient.messages.create({
@@ -77,3 +84,33 @@ app.get('/test', (req, res) => {
 // }
 
 // // ... [rest of the code]
+
+// Schedule messages based on the configuration
+schedule.forEach(entry => {
+    const startDate = new Date(entry.startDate);
+    const endDate = new Date(entry.endDate);
+
+    // Schedule message for the start date at 8:32am EST
+    cron.schedule(`45 20 ${startDate.getDate()} ${startDate.getMonth() + 1} *`, () => {
+        sendMessage(entry.number, `Hello ${entry.name}, this is your message for the start of the week.`);
+    }, {
+        scheduled: true,
+        timezone: "America/New_York"
+    });
+
+    // Schedule message for the end date at 8:32pm EST
+    cron.schedule(`32 20 ${endDate.getDate()} ${endDate.getMonth() + 1} *`, () => {
+        sendMessage(entry.number, `Hello ${entry.name}, this is your message for the end of the week.`);
+    }, {
+        scheduled: true,
+        timezone: "America/New_York"
+    });
+});
+
+app.get('/', (req, res) => {
+    res.send('Text Scheduler is Running!');
+});
+
+app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+});
